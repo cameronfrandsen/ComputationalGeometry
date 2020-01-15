@@ -1,0 +1,13 @@
+cmake_minimum_required(VERSION 3.12.0)
+set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/bin CACHE PATH
+  "Locaction for installation"
+  FORCE)
+if(CMAKE_CONFIGURATION_TYPES)
+  set(CMAKE_CONFIGURATION_TYPES Debug Release)
+  set(CMAKE_BUILD_TYPE "${CMAKE_CONFIGURATION_TYPES}" CACHE STRING
+    "choose the type to build, options are: Debug Release" FORCE)
+endif()
+project(ComputationalGeometry)
+set(CMAKE_CXX_STANDARD 17)
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+add_subdirectory(651C)
