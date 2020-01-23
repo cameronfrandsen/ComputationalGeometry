@@ -6,9 +6,9 @@
 
 struct Point
 {
-  double x;
-  double y;
-  Point(double xt, double yt) : x(xt), y(yt) {}
+  int x;
+  int y;
+  Point(int xt, int yt) : x(xt), y(yt) {}
 };
 
 bool operator==(const Point& a, const Point& b)
@@ -35,12 +35,12 @@ struct Line
   Line(const Point& tp1, const Point& tp2) : p1(tp1), p2(tp2) {}
 };
 
-double crossProduct(const Point& a, const Point& b)
+int crossProduct(const Point& a, const Point& b)
 {
   return (a.x * b.y) - (a.y * b.x);
 }
 
-double dotProduct(const Point& p1, const Point& p2)
+int dotProduct(const Point& p1, const Point& p2)
 {
   return (p1.x * p2.x) + (p2.y * p1.y);
 }
@@ -92,7 +92,7 @@ bool verifyAngle(const Line& l1, const Line& l2)
   return dotProduct(l1.p2 - l1.p1, l2.p2 - l2.p1) > 0;
 }
 
-double getDistance(const Point& p1, const Point& p2)
+int getDistance(const Point& p1, const Point& p2)
 {
   return std::sqrt(std::pow(p2.x - p1.x, 2) + std::pow(p2.y - p1.y, 2));
 }
@@ -114,8 +114,6 @@ void swap(Line& l1, Line& l2)
 
 bool isAnA(Line& l1, Line& l2, Line& l3)
 {
-  auto start = std::chrono::high_resolution_clock::now();
-
   if (containsSamePoint(l1, l2))
   {
   }
@@ -135,10 +133,10 @@ bool isAnA(Line& l1, Line& l2, Line& l3)
 
 int main()
 {
-
+  auto start = std::chrono::high_resolution_clock::now();
   int count;
   std::cin >> count;
-  double x11, y11, x12, y12, x21, y21, x22, y22, x31, y31, x32, y32;
+  int x11, y11, x12, y12, x21, y21, x22, y22, x31, y31, x32, y32;
 
   for (int i = 0; i < count; i++)
   {
@@ -152,6 +150,10 @@ int main()
     else
       std::cout << "NO" << std::endl;
   }
+  
+  auto end = std::chrono::high_resolution_clock::now();
+  std::cout << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << std::endl;
+
 
   return 0;
 }
