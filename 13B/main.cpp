@@ -6,9 +6,9 @@
 
 struct Point
 {
-  int x;
-  int y;
-  Point(int xt, int yt) : x(xt), y(yt) {}
+  long long x;
+  long long y;
+  Point(long long xt, long long yt) : x(xt), y(yt) {}
 };
 
 bool operator==(const Point& a, const Point& b)
@@ -35,12 +35,12 @@ struct Line
   Line(const Point& tp1, const Point& tp2) : p1(tp1), p2(tp2) {}
 };
 
-int crossProduct(const Point& a, const Point& b)
+long long crossProduct(const Point& a, const Point& b)
 {
   return (a.x * b.y) - (a.y * b.x);
 }
 
-int dotProduct(const Point& p1, const Point& p2)
+long long dotProduct(const Point& p1, const Point& p2)
 {
   return (p1.x * p2.x) + (p2.y * p1.y);
 }
@@ -57,11 +57,6 @@ bool intersectsL1(const Line& l1, Line& l3)
 
 bool intersectsL2(const Line& l2, Line& l3)
 {
-  if (!crossProduct(l2.p2 - l2.p1, l3.p1 - l2.p1))
-  {
-    swap(l3.p1, l3.p2);
-    return true;
-  }
   return crossProduct(l2.p2 - l2.p1, l3.p2 - l2.p1) == 0;
 }
 
@@ -89,20 +84,41 @@ bool containsSamePoint(Line& l1, Line& l2)
 
 bool verifyAngle(const Line& l1, const Line& l2)
 {
-  return dotProduct(l1.p2 - l1.p1, l2.p2 - l2.p1) > 0;
+  return dotProduct(l1.p2 - l1.p1, l2.p2 - l2.p1) >= 0;
 }
 
-int getDistance(const Point& p1, const Point& p2)
-{
-  return std::sqrt(std::pow(p2.x - p1.x, 2) + std::pow(p2.y - p1.y, 2));
-}
+// double getDistance(const Point& p1, const Point& p2)
+//{
+//  return std::sqrt(std::pow(p2.x - p1.x, 2) + std::pow(p2.y - p1.y, 2));
+//}
 
 bool verifyRatio(Line& l1, Line& l2, Line& l3)
 {
-  auto ratio = getDistance(l1.p1, l3.p1) / getDistance(l3.p1, l1.p2);
-  if (ratio < .25 || ratio > 4) return false;
-  ratio = getDistance(l2.p1, l3.p2) / getDistance(l3.p2, l2.p2);
-  return ratio >= .25 && ratio <= 4;
+  auto firstX = std::abs(l1.p1.x - l3.p1.x);
+  auto firstY = std::abs(l1.p1.y - l3.p1.y);
+  auto secondX = std::abs(l1.p1.x - l1.p2.x);
+  auto secondY = std::abs(l1.p1.y - l1.p2.y);
+  if (firstX * 5 < secondX || firstX * 1.25 > secondX) return false;
+  if (firstY * 5 < secondY || firstY * 1.25 > secondY) return false;
+
+  firstX = std::abs(l2.p1.x - l3.p2.x);
+  firstY = std::abs(l2.p1.y - l3.p2.y);
+  secondX = std::abs(l2.p1.x - l2.p2.x);
+  secondY = std::abs(l2.p1.y - l2.p2.y);
+  if (firstX * 5 < secondX || firstX * 1.25 > secondX) return false;
+  if (firstY * 5 < secondY || firstY * 1.25 > secondY) return false;
+
+  return true;
+}
+
+bool verifyInAL1(const Line& l1, Line& l3)
+{
+  return dotProduct(l1.p2 - l1.p1, l3.p1 - l1.p1) > 0;
+}
+
+bool verifyInAL2(const Line& l2, Line& l3)
+{
+  return dotProduct(l2.p2 - l2.p1, l3.p2 - l2.p1) > 0;
 }
 
 void swap(Line& l1, Line& l2)
@@ -124,7 +140,11 @@ bool isAnA(Line& l1, Line& l2, Line& l3)
   else
     return false;
 
+  if (crossProduct(l1.p2 - l1.p1, l2.p2 - l1.p1) == 0) return false;
+
   if (!intersectsL1(l1, l3) || !intersectsL2(l2, l3)) return false;
+
+  if (!verifyInAL1(l1, l3) || !verifyInAL2(l2, l3)) return false;
 
   if (!verifyAngle(l1, l2)) return false;
 
@@ -133,10 +153,10 @@ bool isAnA(Line& l1, Line& l2, Line& l3)
 
 int main()
 {
-  auto start = std::chrono::high_resolution_clock::now();
+  std::ios::sync_with_stdio(false);
   int count;
   std::cin >> count;
-  int x11, y11, x12, y12, x21, y21, x22, y22, x31, y31, x32, y32;
+  long long x11, y11, x12, y12, x21, y21, x22, y22, x31, y31, x32, y32;
 
   for (int i = 0; i < count; i++)
   {
@@ -150,10 +170,6 @@ int main()
     else
       std::cout << "NO" << std::endl;
   }
-  
-  auto end = std::chrono::high_resolution_clock::now();
-  std::cout << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << std::endl;
-
 
   return 0;
 }
