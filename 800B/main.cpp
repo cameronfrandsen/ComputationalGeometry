@@ -44,17 +44,9 @@ int main()
   {
     auto next = points[(i + 1) % count];
     auto last = points[(i - 1 + count) % count];
-    auto area = crossProduct(points[i] - next, last - next);
+    auto area = std::abs(crossProduct(points[i] - next, last - next));
     auto width = distance(next, last);
     if (area / width < lowest) lowest = area / width;
-  }
-
-  if (count == 50)
-  {
-    for (int i = 0; i < count; i++)
-    {
-      std::cout << points[i].x << " " << points[i].x << " ";
-    }
   }
 
   std::cout << std::setprecision(12) << lowest / 2 << std::endl;
