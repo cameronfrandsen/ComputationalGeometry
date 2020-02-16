@@ -8,7 +8,12 @@ Point operator-(const Point& p1, const Point& p2)
   return {p1.first - p2.first, p1.second - p2.second};
 }
 
-struct PointCmp
+bool operator<(const Point& lhs, const Point& rhs)
+{
+  return lhs.first < rhs.first;
+}
+
+struct Comp
 {
   bool operator()(const Point& lhs, const Point& rhs) const
   {
@@ -26,84 +31,74 @@ long long crossProduct(const Point& p1, const Point& p2, const Point& p3)
   return crossProduct(p2 - p1, p3 - p1);
 }
 
-bool isLower(const std::set<Point, PointCmp> set, const Point& p)
+bool belowTop(const std::set<Point, Comp>& high, const Point& p)
 {
-  auto t = set.find(p);
-  if (t != set.end())
-  {
-    if (t->second < p.second) return false;
-    return true;
-  }
-  auto lower = set.lower_bound(p);
-  auto upper = set.upper_bound(p);
-  if (lower == set.end() || upper == set.end()) return false;
-  if (crossProduct(*lower, *upper, p) < 0) return false;
-  return true;
+  auto lower = high.lower_bound(p);
+  if (lower == high.end()) return false;
+  if (lower->first == p.first) return lower->second >= p.second;
+  auto higher = lower;
+  lower--;
+  if (lower == high.end() || higher == high.end()) return false;
+  return crossProduct(*lower, *higher, p) <= 0;
 }
 
-bool isHigher(const std::set<Point, PointCmp> set, const Point& p)
+bool aboveBottom(const std::set<Point, Comp>& low, const Point& p)
 {
-  auto t = set.find(p);
-  if (t != set.end())
-  {
-    if (t->second > p.second) return false;
-    return true;
-  }
-  auto lower = set.lower_bound(p);
-  auto upper = set.upper_bound(p);
-  if (lower == set.end() || upper == set.end()) return false;
-  if (crossProduct(*lower, *upper, p) > 0) return false;
-  return true;
+  auto lower = low.lower_bound(p);
+  if (lower == low.end()) return false;
+  if (lower->first == p.first) return lower->second <= p.second;
+  auto higher = lower;
+  lower--;
+  if (lower == low.end() || higher == low.end()) return false;
+  return crossProduct(*lower, *higher, p) >= 0;
 }
 
-void insertUp(std::set<Point, PointCmp>& set, const Point& p, int dir)
+void removeRight(std::set<Point, Comp>& low, const Point& p, int dir)
 {
-  auto up = set.upper_bound(p);
-  if (up == set.end())
+  auto lower = low.lower_bound(p);
+  if (lower == low.end()) return;
+  if (lower->first == p.first) lower = low.erase(lower);
+  if (lower == low.end()) return;
+  auto higher = lower;
+  higher++;
+  while (higher != low.end() && crossProduct(p, *lower, *higher) * dir > 0)
   {
-    auto cur = set.find(p);
-    if (cur == set.end() || cur->second > p.second) return;
-    set.erase(cur);
-    return;
-  }
-
-  up++;
-  if (up == set.end()) return;
-  auto next = up;
-  next++;
-  while (next != set.end() && crossProduct(p, *up, *next) * dir > 0)
-  {
-    next++;
-    set.erase(up++);
+    higher++;
+    lower = low.erase(lower);
   }
 }
 
-void insertLow(std::set<Point, PointCmp>& set, const Point& p, int dir)
+void removeLeft(std::set<Point, Comp>& low, const Point& p, int dir)
 {
-  auto down = set.lower_bound(p);
-  if (down == set.end())
+  bool toIncrease(true);
+  auto lower = low.lower_bound(p);
+  if (lower == low.end())
   {
-    auto cur = set.find(p);
-    if (cur == set.end() || cur->second < p.second) return;
-    set.erase(cur);
-    return;
+    lower = low.begin();
+    if (lower == low.end()) return;
+    for (auto i = 0; i < low.size() - 1; i++)
+      lower++;
+    toIncrease = false;
   }
-
-  down--;
-  if (down == set.end()) return;
-  auto next = down;
-  next--;
-  while (next != set.end() && crossProduct(p, *down, *next) * dir < 0)
+  else
   {
-    next--;
-    set.erase(down--);
+    lower--;
+    if (lower == low.end()) return;
+  }
+  auto higher = lower;
+  lower--;
+  while (lower != low.end() && crossProduct(*higher, *lower, p) * dir < 0)
+  {
+    lower--;
+    higher = low.erase(higher);
+    higher--;
   }
 }
 
 int main()
 {
-  std::set<Point, PointCmp> low;
-  std::set<Point, PointCmp> high;
+  std::set<Point, Comp> low;
+  std::set<Point, Comp> high;
 
   int count(0);
 
@@ -122,27 +117,25 @@ int main()
     if (option == 1)
     {
 
-      bool isLow = isLower(high, p);
-      bool isHigh = isHigher(low, p);
+      bool below = belowTop(high, p);
+      bool above = aboveBottom(low, p);
 
-      if (!isLow)
+      if (!below)
       {
-        insertUp(high, p, 1);
-        insertLow(high, p, 1);
+        removeRight(high, p, 1);
+        removeLeft(high, p, 1);
         high.emplace(p);
       }
-      if (!isHigh)
+      if (!above)
       {
-        insertUp(low, p, -1);
-        insertLow(low, p, -1);
+        removeRight(low, p, -1);
+        removeLeft(low, p, -1);
         low.emplace(p);
       }
     }
     else if (option == 2)
     {
-      bool isLow = isLower(high, p);
-      bool isHigh = isHigher(low, p);
-      if (isLow && isHigh)
+      if (belowTop(high, p) && aboveBottom(low, p))
         std::cout << "YES" << std::endl;
       else
         std::cout << "NO" << std::endl;
