@@ -41,7 +41,7 @@ bool belowTop(const std::set<Point, Comp>& high, const Point& p)
   if (lower->first == p.first) return lower->second >= p.second;
   auto higher = lower;
   lower--;
-  if (lower == high.end() || higher == high.end()) return false;
+  if (lower == high.end() || higher == high.end() || lower==higher) return false;
   return crossProduct(*lower, *higher, p) <= 0;
 }
 
@@ -52,7 +52,7 @@ bool aboveBottom(const std::set<Point, Comp>& low, const Point& p)
   if (lower->first == p.first) return lower->second <= p.second;
   auto higher = lower;
   lower--;
-  if (lower == low.end() || higher == low.end()) return false;
+  if (lower == low.end() || higher == low.end() || lower==higher) return false;
   return crossProduct(*lower, *higher, p) >= 0;
 }
 
@@ -90,11 +90,11 @@ void removeLeft(std::set<Point, Comp>& low, const Point& p, int dir)
   }
   auto higher = lower;
   lower--;
-  while (lower != low.end() && crossProduct(*higher, *lower, p) * dir <= 0)
+  while (lower != low.end() && lower != higher && crossProduct(*higher, *lower, p) * dir <= 0)
   {
+    low.erase(higher);
+    higher = lower;
     lower--;
-    higher = low.erase(higher);
-    higher--;
   }
 }
 
